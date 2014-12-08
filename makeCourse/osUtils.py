@@ -3,9 +3,19 @@ from subprocess import Popen, PIPE, call, list2cmdline
 from colorama import Fore
 import os
 from collections import deque
-from config import Config
+from .config import Config
+import re
 
-	
+
+regex_comma = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
+
+
+def splitToComma( text):
+	# split to comma but ignore comma in quoted strings
+	#http://stackoverflow.com/questions/2785755/how-to-split-but-ignore-separators-in-quoted-strings-in-python
+	return [ st.strip(' \'\"') for st in regex_comma.split(text)[1::2] ]
+
+
 def runCommand( cmd, times=1):
 	"""run shell command, several times
 	(and manage the errors)"""
@@ -13,7 +23,7 @@ def runCommand( cmd, times=1):
 	if Config.options.verbosity>0:
 		print  (Fore.MAGENTA+'>'+list2cmdline(cmd)+Fore.RESET)
 	for i in range(times):
-		proc = Popen( list2cmdline(cmd), stdout=PIPE, shell=True)	
+		proc = Popen( list2cmdline(cmd), stdout=PIPE, shell=True)
 		display = False
 		line = 'toto'
 		while line:
@@ -35,11 +45,11 @@ def cd( path):
 	"""Change directory"""
 	if Config.options.verbosity>0:
 		print( Fore.MAGENTA+ '>cd '+path+Fore.RESET)
-	os.chdir(path)	
+	os.chdir(path)
 
 
 def createDirectory( dir):
-	"""Do the necessary to create directory (or do nothing if it exists) 
+	"""Do the necessary to create directory (or do nothing if it exists)
 	works with xxx/yyy/zzz even if xxx or xxx/yyy do not exist"""
 	ldir = dir.split('/')
 	d = ''
@@ -49,21 +59,21 @@ def createDirectory( dir):
 			if Config.options.verbosity>0:
 				print( Fore.MAGENTA+">mkdir "+d+Fore.RESET)
 			os.mkdir(d)
-	
+
 def getPathTime(dir):
 	"""Get the latest time of all the files of a directory (and subdirectory)"""
-	pathTimes = [ os.path.getmtime( os.path.join(root,f) ) for root, subFolders, files in os.walk(dir) for f in files ] 
-	return pathTimes and max( pathTimes ) or 0 
+	pathTimes = [ os.path.getmtime( os.path.join(root,f) ) for root, subFolders, files in os.walk(dir) for f in files ]
+	return pathTimes and max( pathTimes ) or 0
 
 
-def fileAlmostExists(fileNamePath, prefix):
+def fileAlmostExists(fileNamePath, extension=''):
 	"""Check if a file exists (from it path and filename)
 	For each subfolder of fileNamePath, we check if the folder really exists, or if there is only one folder with a name approaching the subfolder (begin or end with)
 	Return the true validated fileName or None if the file doesn't exist """
 	partial = []		# list of the partial path ("/".join(partial) gives the full path)
 	for d in fileNamePath.split('/'):
-		pr = '.' + prefix if d==fileNamePath.split('/')[-1] else '' # get the prefix only for the last part (filename only, not path)
-		# check if d exists, if a (unique) folder starting with d exists, a (unique) folder ending with d, or a (unique) folder containing d (in that order) 
+		pr = '.' + extension if d==fileNamePath.split('/')[-1] else '' # get the prefix only for the last part (filename only, not path)
+		# check if d exists, if a (unique) folder starting with d exists, a (unique) folder ending with d, or a (unique) folder containing d (in that order)
 		for p in [ d, d+'*', '*'+d, '*'+d+'*' ]:
 			res = glob( "/".join(partial+[p])+pr )
 			if len(res)==1:
@@ -71,7 +81,5 @@ def fileAlmostExists(fileNamePath, prefix):
 				break
 		else:
 			return None
-	
+
 	return "/".join(partial)
-	
-	
