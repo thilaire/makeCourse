@@ -5,9 +5,17 @@ import os
 from collections import deque
 from .config import Config
 import re
+import unicodedata
+import platform
 
 
 regex_comma = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
+
+#http://stackoverflow.com/questions/5581857/git-and-the-umlaut-problem-on-mac-os-x
+if platform.system()=='Darwin':
+	unicode_normalization = 'NFD'
+else:
+	unicode_normalization ='NFC'	
 
 
 def splitToComma( text):
@@ -66,16 +74,22 @@ def getPathTime(dir):
 	return pathTimes and max( pathTimes ) or 0
 
 
-def fileAlmostExists(fileNamePath, extension=''):
+def fileAlmostExists(fileNamePath, extension='*'):
 	"""Check if a file exists (from it path and filename)
 	For each subfolder of fileNamePath, we check if the folder really exists, or if there is only one folder with a name approaching the subfolder (begin or end with)
 	Return the true validated fileName or None if the file doesn't exist """
+
 	partial = []		# list of the partial path ("/".join(partial) gives the full path)
 	for d in fileNamePath.split('/'):
 		pr = '.' + extension if d==fileNamePath.split('/')[-1] else '' # get the prefix only for the last part (filename only, not path)
 		# check if d exists, if a (unique) folder starting with d exists, a (unique) folder ending with d, or a (unique) folder containing d (in that order)
-		for p in [ d, d+'*', '*'+d, '*'+d+'*' ]:
-			res = glob( "/".join(partial+[p])+pr )
+		for p in ( d, d+'*', '*'+d, '*'+d+'*' ):
+
+			# need to denormalize unicode string to be able to search for filename with accents
+			# see http://nedbatchelder.com/blog/201106/filenames_with_accents.html
+			# and http://stackoverflow.com/questions/14185114/pythons-glob-module-and-unix-find-command-dont-recognize-non-ascii
+			denorm = unicodedata.normalize(unicode_normalization, "/".join(partial+[p])+pr )
+			res = glob( denorm )
 			if len(res)==1:
 				partial.append( res[0].split("/")[-1] )		# append the last part of the path
 				break

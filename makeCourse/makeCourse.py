@@ -49,19 +49,30 @@ def importFiles( bfs, importScheme ):
 			fileName = fileNameExt[0] if len(fileNameExt)==1 else ".".join(fileNameExt[:-1])	# everything except the extension of the file, if there is an extension
 			# check if the file exist
 			if len(fileNameExt)==1:
-				fileName = fileAlmostExists(fileName, 'xml') or fileAlmostExists(filename)
+				fileName = fileAlmostExists(fileName, 'xml') or fileAlmostExists(fileName)
 			else:
 				fileName = fileAlmostExists(fileName, fileNameExt[-1])
 			if not fileName:
-				raise mkcException( "The file "+path + toImport[-1] + ".xml"+" cannot be imported, it does not exist!" )
+				if tag in importScheme:
+					raise mkcException( "The file "+path + toImport[-1] + ".xml"+" cannot be imported, it does not exist!" )
+				else:
+					raise mkcException( "The file "+path + toImport[-1] + ".xml"+" cannot be imported, probably because there is no specified path for the importation of tag <"+tag.name+">")
 			# open the file, insert it in place
+			if Config.options.verbosity>0:
+				print( Fore.MAGENTA+"  Import file "+ fileName)
 			if fileName.split('.')[-1] == 'xml':
 				im = BeautifulSoup(codecs.open(fileName, encoding=tag.attrs.get('encoding','utf-8')),features="xml")
-				if im.contents[0].name == tag.name and len(splitToComma( tag["import"] ))==1 :
-					im.contents[0].attrs.update(tag.attrs)
-					tag.replace_with( im.contents[0] )
+				if im.contents:
+
+#TODO: ne marche pas pour un commentaire dans un fichier xml importé...
+					
+					if im.contents[0].name == tag.name and len(splitToComma( tag["import"] ))==1 :
+						im.contents[0].attrs.update(tag.attrs)
+						tag.replace_with( im.contents[0] )						
+					else:
+						tag.append(im.contents[0])
 				else:
-					tag.insert_child(im.contents[0])
+					raise mkcException( 'The file '+fileNameExt+' is not valid !')
 			else:
 				tag.append( codecs.open(fileName, encoding=tag.attrs.get('encoding','utf-8')).read() )
 
@@ -125,10 +136,17 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles):
 			pass
 
 
+		runCommand(['echo', '$PATH'])
+
+
+
 		# build every argument in the command line arguments
 		somethingHasBeDone = False
 		for s in sessionsToBuild:
 			if (not args) or ("all" in args) or (s.name in args) or (s.type in args):
+				
+				cd( basePath)
+				
 				# check if something has to be done
 				if s.shouldBeMake(basePath+'/'+genPath) or options.force:
 					somethingHasBeDone = True
@@ -137,7 +155,6 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles):
 					print ( Fore.BLUE+"*) Make "+Style.BRIGHT+s.name+Fore.RESET+Style.NORMAL)
 
 					# make temp directory and copy all the file in resources dir
-					cd( basePath)
 					if options.debug:
 						tmp = "debug/"+s.name+'/'
 						createDirectory(tmp)

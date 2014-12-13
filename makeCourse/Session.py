@@ -106,7 +106,7 @@ class Session(object):
 		"""Prepare (copy) the resources (commonFiles) of a session into the dest folder (temporary or debug) """
 		runCommand( ['cp', self.commonFiles+'*', dest])
 		done = {}
-		for p in splitToComma( self.tag["imported"] ):
+		for p in splitToComma( self.tag.get("imported",'') ):
 			pPath = '/'.join(p.strip().split('/')[0:-1])
 			if pPath not in done:
 				runCommand( ['cp', '-R', pPath+"/", dest])
