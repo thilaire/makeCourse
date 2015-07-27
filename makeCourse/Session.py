@@ -20,6 +20,7 @@ import datetime
 from .osUtils import runCommand, getPathTime, splitToComma
 from .config import Config
 
+import pypandoc
 
 # jinja renderer (change the default delimiters used by Jinja such that it won't pick up brackets attached to LaTeX macros.)
 # cfhttp://tex.stackexchange.com/questions/40720/latex-in-industry
@@ -38,10 +39,25 @@ def containsTextOnly( tag):
 	return tag.string and not tag.find_all()
 
 
+def convertStringTag( tag, convertTo):
+	"""convert a text-only tag to a format (latex, markdown, etc.)
+	according to its format (given by its attribute 'format')"""
+	if convertTo and ('format' in tag.attrs) and convertTo!=tag['format']:
+		return pypandoc.convert(tag.string, convertTo, format = tag['format'])
+	else:
+		return tag.string
+	
+def convertString( string, convertFrom, convertTo):
+	if convertFrom and convertTo and convertFrom!=convertTo:
+		return pypandoc.convert( string, convertTo, format=convertFrom)
+	else:
+		return string
+
 class Session(object):
 
 	number = 0		# number of objects created
-
+	format = ''		# intern format
+	
 	def __init__(self, tag, commonFiles):
 		"""
 		- tag (beautifulSoup object) to build the session
@@ -56,10 +72,11 @@ class Session(object):
 		self.dict = {}
 		for p in tag.parents:	# build self.dict from the parents
 			if p is not None:
-				self.dict = dict( {tag.name:tag.string for tag in p( containsTextOnly, recursive=False) }, **self.dict )
+				self.dict = dict( {tag.name:convertStringTag(tag,self.format) for tag in p( containsTextOnly, recursive=False) }, **self.dict )
 
-		self.dict.update( {tag.name:tag.string for tag in self.tag( containsTextOnly, recursive=False) } )
 		self.dict.update( tag.attrs)
+		self.dict.update( {tag.name:convertStringTag(tag,self.format) for tag in self.tag( containsTextOnly, recursive=False) } )
+
 
 		self.dict [ 'type' ] = self.type
 		self.name = tag.get('name') or self.dict.get('name') or self.type+str(type(self).number) 		# name of the Session (usually type+number)
@@ -67,7 +84,8 @@ class Session(object):
 		self.remainsUnchanged = False
 
 		#contents
-		self.dict[ 'Content' ] = '\n'.join( [l for l in self.tag.contents if isinstance(l,NavigableString) and not isinstance(l,Comment)] )
+		self.dict[ 'Content' ] = '\n'.join( [convertString(l, convertFrom=self.tag.attrs.get('format',''), convertTo=self.format) for l in self.tag.contents if isinstance(l,NavigableString) and not isinstance(l,Comment)] )
+		
 
 	def make(self, options):
 		pass
@@ -99,7 +117,7 @@ class Session(object):
 
 			return (newestTimeParts > oldestTimeProducedFile)
 		else:
-			 return True
+			return True
 
 
 	def prepareResources(self, dest):
