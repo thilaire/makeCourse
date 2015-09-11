@@ -54,7 +54,7 @@ def importFiles( bfs, importScheme ):
 				fileName = fileAlmostExists(fileName, fileNameExt[-1])
 			if not fileName:
 				if tag in importScheme:
-					raise mkcException( "The file "+path + toImport[-1] + ".xml"+" cannot be imported, it does not exist!" )
+					raise mkcException( "The file "+path + toImport[-1] + ".xml"+" cannot be imported, it does not exist (or several paths exist)!" )
 				else:
 					raise mkcException( "The file "+path + toImport[-1] + ".xml"+" cannot be imported, probably because there is no specified path for the importation of tag <"+tag.name+">")
 			# open the file, insert it in place
@@ -64,7 +64,7 @@ def importFiles( bfs, importScheme ):
 				im = BeautifulSoup(codecs.open(fileName, encoding=tag.attrs.get('encoding','utf-8')),features="xml")
 				if im.contents:
 
-#TODO: ne marche pas pour un commentaire dans un fichier xml importé...
+					#TODO: ne marche pas pour un commentaire dans un fichier xml importé...
 					
 					if im.contents[0].name == tag.name and len(splitToComma( tag["import"] ))==1 :
 						im.contents[0].attrs.update(tag.attrs)
@@ -119,10 +119,14 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles):
 		# get the list of sessions we can build (with a 'make' method)
 		buildableSessions = { x.__name__:x for x in Session.__subclasses__() if 'make' in x.__dict__ }
 
+		#This set the PATH for PyDev only...
+		os.environ['PATH'] = os.environ['PATH']+':'+os.getenv('PATH')
+
+
 		# build the list of Sessions to build
 		sessionsToBuild = []
 		for name,session in buildableSessions.items():
-			sessionsToBuild.extend( session(tag, commonFiles) for tag in bs(name) )
+			sessionsToBuild.extend( 	 for tag in bs(name) )
 
 
 		# if possible, load the previous xml file, and look for the differences
@@ -134,10 +138,6 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles):
 						s.checkDifferences( data[s.name] )
 		except IOError:
 			pass
-
-
-		runCommand(['echo', '$PATH'])
-
 
 
 		# build every argument in the command line arguments

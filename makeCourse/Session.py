@@ -56,7 +56,8 @@ def convertString( string, convertFrom, convertTo):
 class Session(object):
 
 	number = 0		# number of objects created
-	format = ''		# intern format
+	format = ''		# intern format (LaTex, markdown, etc.)
+	
 	
 	def __init__(self, tag, commonFiles):
 		"""
@@ -86,12 +87,6 @@ class Session(object):
 		#contents
 		self.dict[ 'Content' ] = '\n'.join( [convertString(l, convertFrom=self.tag.attrs.get('format',''), convertTo=self.format) for l in self.tag.contents if isinstance(l,NavigableString) and not isinstance(l,Comment)] )
 		
-
-	def make(self, options):
-		pass
-
-	def files(self):
-		pass
 
 
 	def shouldBeMake(self, scheme):
@@ -131,34 +126,43 @@ class Session(object):
 				done[ pPath ]=True
 
 
-
-	def writeFileFromTemplate(self, templateFileName, fileName, dictionary={}, encoding='utf-8'):
-		"""Read the template file, and fill it with the dictionnary (and the content of the session, of course)
-		and save it in the temporary directory
+	def getStringFromTemplate(self, templateFileName, dictionary={}, encoding='utf-8'):
+		"""Read the template file and fill it with the dictionnary (and the content of the session, of course)
+		and returns the result
 		"""
-
 		#open the template file
 		template = renderer.get_template( self.commonFiles+templateFileName, encoding)
 		# dictionary for the template file
 		d = dict( dictionary, **self.dict)		# http://stackoverflow.com/questions/1781571/how-to-concatenate-two-dictionaries-to-create-a-new-one-in-python
-		d["Filename"] = fileName
+		d["Filename"] = self.commonFiles+templateFileName
 		now = datetime.datetime.now()
 		d['Date'] = now.strftime('%d/%m/%Y - %H:%M')
-		#create the new file
-		resultFile = io.open( fileName, "w", encoding=encoding)
+		
+		# render the template
 		t=template.render( d )
-		resultFile.write( t )
-		resultFile.close()
 
 		# get the list of unused variables
 		# cf http://stackoverflow.com/questions/8260490/how-to-get-list-of-all-variables-in-jinja-2-templates
-		template_source = renderer.loader.get_source(renderer, self.commonFiles+templateFileName)[0]
-		parsed_content = renderer.parse(template_source)
+		parsed_content = renderer.parse(template)
 		variables = meta.find_undeclared_variables(parsed_content)
 		unusedVariables = [ var for var in variables if var not in d ]
 		if unusedVariables and Config.options.verbosity>0:
 			print( Fore.GREEN + "In the template '" + templateFileName + "' the following variables are unused :" + ",".join(unusedVariables) + Fore.RESET + Style.NORMAL)
 
+		
+		return t
+	
+
+	def writeFileFromTemplate(self, templateFileName, fileName, dictionary={}, encoding='utf-8'):
+		"""Read the template file, and fill it with the dictionnary (and the content of the session, of course)
+		and save it in the temporary directory
+		"""
+		# fill the template
+		t = self.getStringFromTemplate(templateFileName, dictionary, encoding)
+		#create the new file
+		resultFile = io.open( fileName, "w", encoding=encoding)
+		resultFile.write( t )
+		resultFile.close()
 
 
 	def checkDifferences(self, data):
