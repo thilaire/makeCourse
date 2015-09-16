@@ -29,7 +29,7 @@ def runCommand( cmd, times=1):
 	(and manage the errors)"""
 	last10 = deque(10*[''], 10)# last 10 lines
 	if Config.options.verbosity>0:
-		print  (Fore.MAGENTA+'>'+list2cmdline(cmd)+Fore.RESET)
+		print  (Fore.MAGENTA+'> '+list2cmdline(cmd)+Fore.RESET)
 	for i in range(times):
 		proc = Popen( list2cmdline(cmd), stdout=PIPE, shell=True)
 		display = False
@@ -52,7 +52,7 @@ def runCommand( cmd, times=1):
 def cd( path):
 	"""Change directory"""
 	if Config.options.verbosity>0:
-		print( Fore.MAGENTA+ '>cd '+path+Fore.RESET)
+		print( Fore.MAGENTA+ '> cd '+path+Fore.RESET)
 	os.chdir(path)
 
 
@@ -65,7 +65,7 @@ def createDirectory( dir):
 		d = d + sd + '/'
 		if not os.path.exists(d):
 			if Config.options.verbosity>0:
-				print( Fore.MAGENTA+">mkdir "+d+Fore.RESET)
+				print( Fore.MAGENTA+"> mkdir "+d+Fore.RESET)
 			os.mkdir(d)
 
 def getPathTime(dir):

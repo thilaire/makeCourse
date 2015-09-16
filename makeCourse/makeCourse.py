@@ -7,82 +7,21 @@ MakeCourse
 import os
 from tempfile import mkdtemp
 from colorama import Fore, Style
-from bs4 import BeautifulSoup, Comment, NavigableString
+from bs4 import BeautifulSoup
 import codecs
 from pickle import dump, load
 from hashlib import md5
 
-from .osUtils import runCommand, fileAlmostExists, createDirectory, cd, splitToComma
+from .osUtils import runCommand, createDirectory, cd
 from .mkcException import mkcException
-from .Session import Session
+from .Session import Session, createTagSession
+
 from .config import Config
 
-print( Fore.RED+"---- MakeCourse v0.3 ----"+Fore.RESET)
+
+print( Fore.RED+"---- MakeCourse v0.4 ----"+Fore.RESET)
 
 
-
-def containsTextOnly( tag):
-	return (not tag.attrs) and tag.string
-
-def notContainsTextOnly( tag):
-	return not containsTextOnly( tag)
-
-
-
-def importFiles( bfs, importScheme ):
-	"""Import the files in a beautifulSoup object (tag)"""
-
-	# import the external files
-	for tag in bfs( lambda x: x.has_attr('import'), recursive=False):
-		imported = []
-		for fn in splitToComma( tag["import"] ):
-			# get the filename (from the importScheme dictionary)
-			toImport = fn.strip().split(":")
-			d = {"#"+str(i+1):n for i,n in enumerate(toImport[:-1])}
-			d.update(tag.attrs)
-			try:
-				path = importScheme.get(tag.name,'').format( **d )
-			except:
-				raise mkcException( "The import path '"+fn+"' is not valid (do not correspond to the scheme '"+importScheme.get(tag.name,'')+"'!)" )
-			fileNameExt = path + toImport[-1]
-			fileNameExt = fileNameExt.split(".")
-			fileName = fileNameExt[0] if len(fileNameExt)==1 else ".".join(fileNameExt[:-1])	# everything except the extension of the file, if there is an extension
-			# check if the file exist
-			if len(fileNameExt)==1:
-				fileName = fileAlmostExists(fileName, 'xml') or fileAlmostExists(fileName)
-			else:
-				fileName = fileAlmostExists(fileName, fileNameExt[-1])
-			if not fileName:
-				if tag in importScheme:
-					raise mkcException( "The file "+path + toImport[-1] + ".xml"+" cannot be imported, it does not exist (or several paths exist)!" )
-				else:
-					raise mkcException( "The file "+path + toImport[-1] + ".xml"+" cannot be imported, probably because there is no specified path for the importation of tag <"+tag.name+">")
-			# open the file, insert it in place
-			if Config.options.verbosity>0:
-				print( Fore.MAGENTA+"  Import file "+ fileName)
-			if fileName.split('.')[-1] == 'xml':
-				im = BeautifulSoup(codecs.open(fileName, encoding=tag.attrs.get('encoding','utf-8')),features="xml")
-				if im.contents:
-
-					#TODO: ne marche pas pour un commentaire dans un fichier xml importé...
-					
-					if im.contents[0].name == tag.name and len(splitToComma( tag["import"] ))==1 :
-						im.contents[0].attrs.update(tag.attrs)
-						tag.replace_with( im.contents[0] )						
-					else:
-						tag.append(im.contents[0])
-				else:
-					raise mkcException( 'The file '+fileNameExt+' is not valid !')
-			else:
-				tag.append( codecs.open(fileName, encoding=tag.attrs.get('encoding','utf-8')).read() )
-
-			imported.append(fileName)
-		tag["imported"] = ', '.join( "'"+i+"'" for i in imported)
-		del tag["import"]
-
-	# recursive import
-	for tag in bfs( notContainsTextOnly, recursive=False):
-		importFiles( tag, importScheme)
 
 
 def makeCourse( xmlFile, genPath, importPaths, commonFiles):
@@ -103,7 +42,9 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles):
 		Config.parse()
 		args = Config.args
 		options = Config.options
-
+		Config.importPaths = importPaths 
+		Config.commonFiles = commonFiles
+		Config.allSessions = { x.__name__:x for x in Session.__subclasses__()}	# list of the created session classes
 		# clean the debug directory in debug mode
 		basePath = os.path.abspath('.')+'/'			# base path (from where the script is run, because the path are relative)
 		if options.debug:
@@ -114,6 +55,13 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles):
 		with codecs.open(xmlFile, encoding='utf-8') as f:
 			bs = BeautifulSoup(f, features="xml")
 
+
+		# build the recursively the sessions
+		top = createTagSession( bs, father=None )		# bs.contents[0]
+		sessionsToBuild = Session.sessionsToBuild		# get the list of the sessions object
+		
+
+		"""
 		importFiles( bs.contents[0], importPaths)
 
 		# get the list of sessions we can build (with a 'make' method)
@@ -126,8 +74,10 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles):
 		# build the list of Sessions to build
 		sessionsToBuild = []
 		for name,session in buildableSessions.items():
-			sessionsToBuild.extend( 	 for tag in bs(name) )
-
+			sessionsToBuild.extend( session(tag, commonFiles) for tag in bs(name) )
+		"""
+		
+		
 
 		# if possible, load the previous xml file, and look for the differences
 		try:
@@ -185,11 +135,11 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles):
 
 
 		if not somethingHasBeDone:
-			print( Fore.BLUE + "Nothing has changed, nothing to do, nothing has been done..." + Fore.RESET)
+			print( Fore.BLUE + "Nothing has changed, nothing to do, so nothing has been done..." + Fore.RESET)
 
 
 		# save the data file
-		data = {L.name: {key:md5(val.encode('utf-8')).hexdigest() for key,val in L.dict.items()} for L in sessionsToBuild }
+		data = {L.name: {key:md5(str(val).encode('utf-8')).hexdigest() for key,val in L.dict.items()} for L in sessionsToBuild }
 		cd( basePath)
 		with open('.makeCourse.data', 'wb') as f:
 			dump( data, f)
