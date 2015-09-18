@@ -17,6 +17,7 @@ from .mkcException import mkcException
 from .Session import Session, createTagSession
 
 from .config import Config
+from os.path import split
 
 
 print( Fore.RED+"---- MakeCourse v0.4 ----"+Fore.RESET)
@@ -80,8 +81,9 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles):
 		
 
 		# if possible, load the previous xml file, and look for the differences
+		dirName,baseName = split(xmlFile) 
 		try:
-			with open(".makeCourse.data", "rb") as f:
+			with open(dirName+"/."+baseName+".makeCourse", "rb") as f:
 				data = load( f )
 				for s in sessionsToBuild:
 					if s.name in data:
@@ -141,7 +143,7 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles):
 		# save the data file
 		data = {L.name: {key:md5(str(val).encode('utf-8')).hexdigest() for key,val in L.dict.items()} for L in sessionsToBuild }
 		cd( basePath)
-		with open('.makeCourse.data', 'wb') as f:
+		with open(dirName+"/."+baseName+".makeCourse", 'wb') as f:
 			dump( data, f)
 
 

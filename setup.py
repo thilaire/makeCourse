@@ -5,8 +5,8 @@ def readme():
         return f.read()
 
 setup(name='makeCourse',
-      version='0.3',
-      description='A tool to build a course (from list of exercices, lectures, etc.)',
+      version='0.4', 
+	description='A tool to build a course (from list of exercices, lectures, etc.)',
       long_description=readme(),
       classifiers=[
         'Development Status :: 3 - Alpha',
@@ -22,6 +22,6 @@ setup(name='makeCourse',
       author_email='thibault@docmatic.fr',
       license='MIT',
       packages=['makeCourse'],
-      install_requires=[ 'colorama', 'beautifulsoup4', 'lxml', 'Jinja2' ],
+      install_requires=[ 'pypandoc', 'colorama', 'beautifulsoup4', 'lxml', 'Jinja2' ],
       include_package_data=True,
       zip_safe=False)
