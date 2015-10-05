@@ -80,8 +80,9 @@ def fileAlmostExists(fileNamePath, extension='*'):
 	Return the true validated fileName or None if the file doesn't exist """
 
 	partial = []		# list of the partial path ("/".join(partial) gives the full path)
-	for d in fileNamePath.split('/'):
-		pr = '.' + extension if d==fileNamePath.split('/')[-1] else '' # get the prefix only for the last part (filename only, not path)
+	parts = fileNamePath.split('/')
+	for i,d in enumerate(parts, start=1):
+		pr = '.' + extension if i==len(parts) else '' # get the prefix only for the last part (filename only, not path)
 		# check if d exists, if a (unique) folder starting with d exists, a (unique) folder ending with d, or a (unique) folder containing d (in that order)
 		for p in ( d, d+'*', '*'+d, '*'+d+'*' ):
 

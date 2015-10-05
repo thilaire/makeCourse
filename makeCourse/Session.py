@@ -135,7 +135,7 @@ class Tag(object):
 							for i in range(len(im.contents)):
 								self.tag.append(im.contents[0])
 					else:
-						raise mkcException( 'The file '+fileNameExt+' is not valid !')
+						raise mkcException( 'The file '+fileName+' is not valid !')
 				else:
 					self.tag.append( codecs.open(fileName, encoding=self.tag.attrs.get('encoding','utf-8')).read() )
 	
@@ -229,11 +229,10 @@ class Session(Tag):
 
 
 	def getStringFromTemplate(self, templateFileName, dictionary={}, lang=None, encoding='utf-8'):
-		"""Read the template file and fill it with the dictionnary (and the content of the session, of course)
+		"""Read the template file and fill it with the dictionnary (and the content of the session, that is also templated, of course)
 		and returns the result
 		"""
-		#open the template file
-		template = renderer.get_template( self.commonFiles+templateFileName, encoding)
+		
 		# dictionary for the template file
 		d = dict( self.dict, **dictionary )		# http://stackoverflow.com/questions/1781571/how-to-concatenate-two-dictionaries-to-create-a-new-one-in-python
 		d["Filename"] = self.commonFiles+templateFileName
@@ -244,8 +243,14 @@ class Session(Tag):
 		for k,v in d.items():
 			if isinstance(v,StrLang):
 				d[k] = v.convertTo(lang)
+
+		# template the Content
+		#template = renderer.from_string(d["Content"])
+		#d["Content"] = template.render(d)
+
 		
-		# render the template
+		#open the template file and render it
+		template = renderer.get_template( self.commonFiles+templateFileName, encoding)
 		t=template.render( d )
 
 		# get the list of unused variables
