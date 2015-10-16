@@ -25,7 +25,7 @@ print( Fore.RED+"---- MakeCourse v0.4 ----"+Fore.RESET)
 
 
 
-def makeCourse( xmlFile, genPath, importPaths, commonFiles):
+def makeCourse( xmlFile, genPath, importPaths, commonFiles, rendererContent=True):
 	"""Parse the course xml-file and treate the command line...
 	Parameters:
 		- xmlFile: name of the XML file containing the description of the course
@@ -46,6 +46,8 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles):
 		Config.importPaths = importPaths 
 		Config.commonFiles = commonFiles
 		Config.allSessions = { x.__name__:x for x in Session.__subclasses__()}	# list of the created session classes
+		Config.rendererContent = rendererContent
+		
 		# clean the debug directory in debug mode
 		basePath = os.path.abspath('.')+'/'			# base path (from where the script is run, because the path are relative)
 		if options.debug:

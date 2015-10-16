@@ -37,8 +37,8 @@ def createTagSession( tag, father):
 # jinja renderer (change the default delimiters used by Jinja such that it won't pick up brackets attached to LaTeX macros.)
 # cfhttp://tex.stackexchange.com/questions/40720/latex-in-industry
 renderer = jinja2.Environment(
-                        block_start_string = '{<',
-                        block_end_string = '>}',
+                        block_start_string = '{%%',
+                        block_end_string = '%%}',
                         comment_start_string='{%<',
                         comment_end_string='>%}',
                         variable_start_string = '{{<',
@@ -245,8 +245,9 @@ class Session(Tag):
 				d[k] = v.convertTo(lang)
 
 		# template the Content
-		#template = renderer.from_string(d["Content"])
-		#d["Content"] = template.render(d)
+		if Config.rendererContent:
+			template = renderer.from_string(d["Content"])
+			d["Content"] = template.render(d)
 
 		
 		#open the template file and render it

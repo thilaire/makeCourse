@@ -9,7 +9,8 @@ class Config:
 	importPaths = {}					# importPaths: schemes to know where to import stuff (dictionnary tag name -> path scheme)
 	commonFiles = {}					# commonFiles: schemes to know where to find the commonFiles (dictionary session name -> path)
 	allSessions = {}
-
+	rendererContent = False				# tells if we should renderer the Content or not 
+	
 	@staticmethod
 	def add_option(*opt1,**opt2):
 		Config._parser.add_option(*opt1,**opt2)

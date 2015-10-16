@@ -22,6 +22,6 @@ setup(name='funniest',
       author_email='thibault@docmatic.fr',
       license='MIT',
       packages=['makeCourse'],
-      install_requires=[ 'colorama', 'beautifulsoup4', 'lxml', 'Jinja2', 'pypandoc' ],
+      install_requires=[ 'colorama', 'beautifulsoup4', 'lxml', 'Jinja2', 'pypandoc', 'requests', 'getpass' ],
       include_package_data=True,
       zip_safe=False)
