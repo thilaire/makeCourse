@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setup(name='makeCourse',
-      version='0.4', 
+      version='0.5',
 	description='A tool to build a course (from list of exercices, lectures, etc.)',
       long_description=readme(),
       classifiers=[

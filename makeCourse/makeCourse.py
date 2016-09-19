@@ -20,7 +20,7 @@ from .config import Config
 from os.path import split
 
 
-print( Fore.RED+"---- MakeCourse v0.4 ----"+Fore.RESET)
+print( Fore.RED+"---- MakeCourse v0.5 ----"+Fore.RESET)
 
 
 
