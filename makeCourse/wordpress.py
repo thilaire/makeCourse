@@ -50,7 +50,7 @@ def getRequest(url, **params):
 	return r
 	
 
-class WP():
+class WP:
 	
 	def __init__(self, url, user, password=None):
 		"""store id to connect to wordpress site

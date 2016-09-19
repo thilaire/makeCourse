@@ -40,6 +40,8 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles, rendererContent=True
 		Config.add_option('-v','--verbosity', help='Set the verbosity level (0: quiet, 1: display the command lines, 2: display command lines and their outputs', dest='verbosity', default=0, type=int)
 		Config.add_option('-d', '--debug', help='Create the files in the debug/ folder, instead of in a temporary one', dest='debug', action='store_true', default=False)
 		Config.add_option('-f', '--force', help='Force the generation of the documents, even if nothing changes from last run', dest='force', action='store_true', default=False)
+		Config.add_option('-q', '--quick', help='Quick pdf generation (do not compile twice the latex, do not produce handout, etc.)', dest='quick', action='store_true', default=False)
+		Config.add_option('--wordpress', help='Publish to wordpress', dest='wordpress', default=False, action='store_true')
 		Config.parse()
 		args = Config.args
 		options = Config.options

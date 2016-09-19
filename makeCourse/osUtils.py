@@ -56,6 +56,7 @@ def cd( path):
 	os.chdir(path)
 
 #TODO: "mkdir -p" could do the same... 
+# noinspection PyShadowingBuiltins
 def createDirectory( dir):
 	"""Do the necessary to create directory (or do nothing if it exists)
 	works with xxx/yyy/zzz even if xxx or xxx/yyy do not exist"""
@@ -68,6 +69,8 @@ def createDirectory( dir):
 				print( Fore.MAGENTA+"> mkdir "+d+Fore.RESET)
 			os.mkdir(d)
 
+
+# noinspection PyShadowingBuiltins
 def getPathTime(dir):
 	"""Get the latest time of all the files of a directory (and subdirectory)"""
 	pathTimes = [ os.path.getmtime( os.path.join(root,f) ) for root, subFolders, files in os.walk(dir) for f in files ]

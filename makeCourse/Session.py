@@ -212,7 +212,7 @@ class Session(Tag):
 			else:
 				newestTimeParts = 0
 
-			return (newestTimeParts > oldestTimeProducedFile)
+			return newestTimeParts > oldestTimeProducedFile
 		else:
 			return True
 
@@ -228,12 +228,14 @@ class Session(Tag):
 				done[ pPath ]=True
 
 
-	def getStringFromTemplate(self, templateFileName, dictionary={}, lang=None, encoding='utf-8'):
+	def getStringFromTemplate(self, templateFileName, dictionary=None, lang=None, encoding='utf-8' ):
 		"""Read the template file and fill it with the dictionnary (and the content of the session, that is also templated, of course)
 		and returns the result
 		"""
 		
 		# dictionary for the template file
+		if dictionary is None:
+			dictionary = { }
 		d = dict( self.dict, **dictionary )		# http://stackoverflow.com/questions/1781571/how-to-concatenate-two-dictionaries-to-create-a-new-one-in-python
 		d["Filename"] = self.commonFiles+templateFileName
 		now = datetime.datetime.now()
@@ -266,11 +268,13 @@ class Session(Tag):
 		return t
 	
 
-	def writeFileFromTemplate(self, templateFileName, fileName, dictionary={}, lang=None, encoding='utf-8'):
+	def writeFileFromTemplate(self, templateFileName, fileName, dictionary=None, lang=None, encoding='utf-8' ):
 		"""Read the template file, and fill it with the dictionnary (and the content of the session, of course)
 		and save it in the temporary directory
 		"""
 		# fill the template
+		if dictionary is None:
+			dictionary = { }
 		t = self.getStringFromTemplate(templateFileName, dictionary, lang, encoding)
 		#create the new file
 		resultFile = io.open( fileName, "w", encoding=encoding)
