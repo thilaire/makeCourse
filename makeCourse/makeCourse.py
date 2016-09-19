@@ -102,7 +102,7 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles, rendererContent=True
 				cd( basePath)
 				
 				# check if something has to be done
-				if s.shouldBeMake(basePath+'/'+genPath) or options.force:
+				if s.shouldBeMake(basePath+'/'+genPath, options) or options.force:
 					somethingHasBeDone = True
 
 					#Make one build (TP, course, etc.)
@@ -122,7 +122,7 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles, rendererContent=True
 					s.make(options)
 
 					# then move the files in the right place
-					for f in s.files():
+					for f in s.files(options):
 						createDirectory( basePath+'/'+genPath.format( **s.dict ) )
 						newFile = basePath+'/'+genPath.format( **s.dict )+f
 						if not os.path.exists(f):

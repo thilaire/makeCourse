@@ -55,7 +55,7 @@ def cd( path):
 		print( Fore.MAGENTA+ '> cd '+path+Fore.RESET)
 	os.chdir(path)
 
-
+#TODO: "mkdir -p" could do the same... 
 def createDirectory( dir):
 	"""Do the necessary to create directory (or do nothing if it exists)
 	works with xxx/yyy/zzz even if xxx or xxx/yyy do not exist"""

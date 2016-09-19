@@ -173,7 +173,7 @@ class Session(Tag):
 
 
 		self.dict [ 'type' ] = self.type
-		self.name = tag.get('name') or self.dict.get('name') or self.type+str(type(self).number) 		# name of the Session (usually type+number)
+		self.name =  tag.get('name') or self.dict.get('name') or self.type+str(type(self).number)		# name of the Session (usually type+number)
 		self.dict[ 'name' ] = self.name
 		self.remainsUnchanged = False
 
@@ -184,14 +184,14 @@ class Session(Tag):
 		if 'make' in type(self).__dict__:
 			Session.sessionsToBuild.append(self)
 
-	def files(self):
+	def files(self, options):
 		"""returns the files that are produced when making the session (none if not specified)"""
 		return []
 	
 		
 
 
-	def shouldBeMake(self, scheme):
+	def shouldBeMake(self, scheme, options):
 		"""determine if the unit should be make
 		(the documents of the units should be produced)
 		(if the previously produced files are older than the files necessary to build the unit, then we should make the unit
@@ -199,7 +199,7 @@ class Session(Tag):
 		if self.remainsUnchanged:
 			# get the time of the oldest produced file (if the file exist)
 			oldestTimeProducedFile = time.time()
-			for f in self.files():
+			for f in self.files(options):
 				target = scheme.format( **self.dict ) + f
 				targetTime = os.path.getmtime(target) if os.path.exists(target) else 0
 				if oldestTimeProducedFile>targetTime:
