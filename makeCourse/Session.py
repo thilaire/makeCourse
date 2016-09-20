@@ -224,7 +224,7 @@ class Session(Tag):
 		for p in splitToComma( self.tag.get("imported",'') ):
 			pPath = '/'.join(p.strip().split('/')[0:-1])
 			if pPath not in done:
-				runCommand( ['cp', '-R', pPath+"/", dest])
+				runCommand( ['cp', '-R', pPath+"/*", dest])
 				done[ pPath ]=True
 
 
