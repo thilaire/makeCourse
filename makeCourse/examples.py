@@ -57,7 +57,7 @@ class TP(Session):
 			content = self.getStringFromTemplate('TP-wp.txt', lang='html', encoding='utf-8')
 			Config.WP.createUpdatePost(title=self.name, content=content, category=Config.WPcategory)
 		# export files to ssh
-		if options.shared:
+		if options.shared and 'sharedPath' in self.dict:
 			print(" - export files to " + Config.sharedOpt["host"])
 			if not self.dict['sharedPath']:
 				raise mkcException("The path <sharedPath> should exist to export the files to " + Config.sharedOpt["host"])
@@ -69,6 +69,11 @@ class TP(Session):
 					runCommand(['scp', f.strip(), "{user}@{host}:{path}".format( path=str(self.dict['sharedPath']), **Config.sharedOpt ) ])
 			# copy the pdf file
 			runCommand(['scp', self.name+"-eleves.pdf", "{user}@{host}:{path}".format( path=str(self.dict['sharedPath']), **Config.sharedOpt ) ])
+		# display correction
+		if options.HTMLcorrection:
+			strHTML = '\n'.join(e.Wordpress() for e in self.iterall('Exercice'))
+			print(strHTML)
+
 			
 	def files(self, options):
 		listShared = []
@@ -94,8 +99,7 @@ class TD(Session):
 		self.writeFileFromTemplate( 'TD.tex', self.name+'-enseignants.tex', {'Enseignants' :  '[enseignants]', 'Content':Content}, lang='latex')
 		runCommand( ["pdflatex", self.name+"-enseignants.tex"], 2 )
 
-		# affiche le SPIP correspondant
-		strSpip = '\n'.join( e.Spip() for e in self.iterall('Exercice') )
+
 		
 		
 	def files(self, options):
@@ -137,5 +141,20 @@ class Exercice(Session):
 	"""Définit un exercice"""
 	def LaTeX(self):
 		return self.getStringFromTemplate( 'exo.tex', lang='latex' )
-	def Spip(self):
-		return self.getStringFromTemplate( 'spip.txt', lang='markdown' )
+	def Wordpress(self):
+		return self.getStringFromTemplate( 'wordpress.txt', lang='markdown' )
+
+
+
+
+class QCM(Session):
+	"""Définit un QCM"""
+	def make( self, options):
+		# construit et compile
+		print( " - build ")
+		self.writeFileFromTemplate( self.type+'.tex', self.type+'.tex', {}, lang='latex')
+		runCommand( ["pdflatex", self.type+".tex"], 2 )
+		
+	def files(self, options):
+		return [ self.type+".pdf", self.type+".tex"]
+
