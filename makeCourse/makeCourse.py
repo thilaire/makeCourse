@@ -37,11 +37,12 @@ def makeCourse( xmlFile, genPath, importPaths, commonFiles, rendererContent=True
 
 		# parse the command line
 		Config.add_option('--verbose', help='Set verbosity to maximum', dest='verbosity', default=0, action='store_const', const=2)
-		Config.add_option('-v','--verbosity', help='Set the verbosity level (0: quiet, 1: display the command lines, 2: display command lines and their outputs', dest='verbosity', default=0, type=int)
+		Config.add_option('-v', '--verbosity', help='Set the verbosity level (0: quiet, 1: display the command lines, 2: display command lines and their outputs', dest='verbosity', default=0, type=int)
 		Config.add_option('-d', '--debug', help='Create the files in the debug/ folder, instead of in a temporary one', dest='debug', action='store_true', default=False)
 		Config.add_option('-f', '--force', help='Force the generation of the documents, even if nothing changes from last run', dest='force', action='store_true', default=False)
 		Config.add_option('-q', '--quick', help='Quick pdf generation (do not compile twice the latex, do not produce handout, etc.)', dest='quick', action='store_true', default=False)
 		Config.add_option('-w', '--wordpress', help='Publish to wordpress', dest='wordpress', default=False, action='store_true')
+		Config.add_option('-c', '--HTMLcorrection', help='Display an HTML correction', dest='HTMLcorrection', default=False, action='store_true')
 		Config.add_option('-s', '--shared', help='Copy the required files to the <shared> path (via ssh)', default=False,	action='store_true')
 		Config.parse()
 		args = Config.args
