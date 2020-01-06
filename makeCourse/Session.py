@@ -224,7 +224,7 @@ class Session(Tag):
 		for p in splitToComma( self.tag.get("imported",'') ):
 			pPath = '/'.join(p.strip().split('/')[0:-1])
 			if pPath not in done:
-				runCommand( ['cp', '-R', pPath+"/*", dest])
+				runCommand( ['cp', '-R', pPath+"/", dest])
 				done[ pPath ]=True
 
 
@@ -238,8 +238,9 @@ class Session(Tag):
 			dictionary = { }
 		d = dict( self.dict, **dictionary )		# http://stackoverflow.com/questions/1781571/how-to-concatenate-two-dictionaries-to-create-a-new-one-in-python
 		d["Filename"] = self.commonFiles+templateFileName
-		now = datetime.datetime.now()
-		d['Date'] = now.strftime('%d/%m/%Y - %H:%M')
+		if 'Date' not in d:
+			now = datetime.datetime.now()
+			d['Date'] = now.strftime('%d/%m/%Y - %H:%M')
 		
 		# translate the dictionary
 		for k,v in d.items():
