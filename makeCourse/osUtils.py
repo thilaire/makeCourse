@@ -24,7 +24,7 @@ def splitToComma( text):
 	return [ st.strip(' \'\"') for st in regex_comma.split(text)[1::2] ]
 
 
-def runCommand( cmd, times=1):
+def runCommand( cmd, times=1, charError = '!'):
 	"""run shell command, several times
 	(and manage the errors)"""
 	last10 = deque(10*[''], 10)# last 10 lines
@@ -39,7 +39,7 @@ def runCommand( cmd, times=1):
 			last10.pop()
 			last10.appendleft(line)
 			# start to display when output starts with '!' (for LaTeX errors)
-			display = display or line.startswith('!')
+			display = display or line.startswith(charError)
 			if display or Config.options.verbosity>1:
 				if len(last10)>1:
 					print( ''.join(last10).rstrip() )

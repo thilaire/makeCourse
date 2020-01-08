@@ -153,7 +153,9 @@ class QCM(Session):
 		# construit et compile
 		print( " - build ")
 		self.writeFileFromTemplate( self.type+'.tex', self.type+'.tex', {}, lang='latex')
-		runCommand( ["pdflatex", self.type+".tex"], 2 )
+		runCommand( ["pdflatex", "--shell-escape", self.type+".tex"], 1 )
+		runCommand( ["pythontex", self.type+".tex"], 1, charError='*')
+		runCommand( ["pdflatex", "--shell-escape", self.type+".tex"], 1 )
 		
 	def files(self, options):
 		return [ self.type+".pdf", self.type+".tex"]
